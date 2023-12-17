@@ -1,0 +1,15 @@
+export { default as Alert } from './Alert';
+export { default as Switch } from './Switch';
+export { default as Headers } from './Headers';
+export { default as Avatars } from './Avatars';
+export { default as InputCustom } from './InputCustom';
+export { default as StyledText } from './StyledText';
+export { default as Job } from './Job';
+export { default as Tag } from './Tag';
+export { default as MenuProfile } from './MenuProfile';
+export { default as JobTitle } from './JobTitle';
+export { default as JobStatus } from './JobStatus';
+export { default as TagStatus } from './TagStatus';
+export { default as ContactBlock } from './ContactBlock';
+export { default as CV } from './CV';
+export { default as SelecteDrop } from './SelecteDrop';

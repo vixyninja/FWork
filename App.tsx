@@ -1,118 +1,54 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { FunctionComponent, useEffect } from 'react';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import PushNotification from 'react-native-push-notification';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/lib/integration/react';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import { Alert } from '@/components/customs';
+import { Loading, UpgradeVersion } from '@/components/shared';
+import { ThemeContext } from '@/contexts';
+import { useFcm } from '@/hooks';
+import RootNavigation from '@/navigation/RootNavigation';
+import { persistor, store } from '@/redux/store';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+const App: FunctionComponent = () => {
+  const { requestPermission } = useFcm();
 
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  useEffect(() => {
+    requestPermission();
+    PushNotification.setApplicationIconBadgeNumber(0);
+  }, [requestPermission]);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <SafeAreaProvider
+          initialMetrics={{
+            frame: { x: 0, y: 0, width: 0, height: 0 },
+            insets: { top: 0, left: 0, right: 0, bottom: 0 },
+          }}
+        >
+          <ThemeContext>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              {/* ALERT */}
+              <Alert />
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+              {/* LOADING API */}
+              <Loading />
+
+              {/* MAIN APP */}
+              <RootNavigation />
+
+              {/* Modal progressing when upgrade version of app */}
+              {/* <UpgradeVersion /> */}
+            </GestureHandlerRootView>
+          </ThemeContext>
+        </SafeAreaProvider>
+      </PersistGate>
+    </Provider>
+  );
+};
 
 export default App;

@@ -1,5 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
+apply plugin: 'com.google.gms.google-services'
 
 import com.android.build.OutputFile
 
@@ -88,18 +89,39 @@ def reactNativeArchitectures() {
     return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
 }
 
+project.ext.envConfigFiles = [
+    debug: "configs/development/.env",
+    release: "configs/production/.env",
+    devrelease: "configs/development/.env",
+    anothercustombuild: ".env",
+]
+
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
+
 android {
+    packagingOptions {
+       pickFirst 'lib/x86/libc++_shared.so'
+       pickFirst 'lib/x86_64/libjsc.so'
+       pickFirst 'lib/arm64-v8a/libjsc.so'
+       pickFirst 'lib/arm64-v8a/libc++_shared.so'
+       pickFirst 'lib/x86_64/libc++_shared.so'
+       pickFirst 'lib/armeabi-v7a/libc++_shared.so'
+    }
     ndkVersion rootProject.ext.ndkVersion
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     namespace "com.fjob"
     defaultConfig {
-        applicationId "com.fjob"
+        applicationId project.env.get("APP_ID_ANDROID")
+        resValue "string", "app_name", project.env.get("APP_NAME")
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        resValue "string", "CodePushDeploymentKey",  project.env.get("CODE_PUSH_DEPLOYMENT_KEY_ANDROID")
+        versionCode project.env.get("APP_BUILD_CODE_ANDROID").toInteger()
+        versionName ANDROID_BUILD_VERSION_NAME
     }
 
     splits {
@@ -153,6 +175,15 @@ dependencies {
     implementation("com.facebook.react:react-android")
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
+
+    implementation platform('com.google.firebase:firebase-bom:32.0.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+
+    implementation project(':react-native-config')
+
+    implementation project(':react-native-keychain')
+
+    implementation project(':react-native-document-picker')
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
